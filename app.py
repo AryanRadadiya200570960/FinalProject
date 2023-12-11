@@ -12,6 +12,31 @@ data = records.find({}, {'data'})
 data = pd.json_normalize(data[0]['data'], meta=['id', 'name', 'symbol', 'slug', 'total_supply', ['quote', 'USD', 'price']])
 data = data.drop(columns=['platform.token_address', 'platform.slug', 'platform.symbol', 'platform.name', 'platform.id', 'id', 'num_market_pairs', 'date_added', 'tags', 'quote.USD.tvl', 'quote.USD.last_updated', 'quote.USD.market_cap_dominance', 'quote.USD.percent_change_90d', 'quote.USD.percent_change_60d', 'quote.USD.percent_change_30d', 'quote.USD.percent_change_7d', 'quote.USD.percent_change_1h', 'quote.USD.volume_change_24h', 'last_updated', 'tvl_ratio', 'self_reported_market_cap', 'self_reported_circulating_supply', 'cmc_rank', 'platform', 'max_supply', 'circulating_supply', 'quote.USD.market_cap', 'quote.USD.fully_diluted_market_cap', 'slug'])
 
+#Pie Chart
+pie = data.groupby('infinite_supply').count()
+pie = pie['name'].to_dict()
+values = pie.items()
+pie = {str(key): value for key, value in values}
+pie_data = {"Infinite Supply": "Values"}
+pie_data.update(pie)
+
+#Column Chart
+top10 = data.head(10)
+top10 = top10.loc[:, ['symbol', 'quote.USD.percent_change_24h']]
+top10 = top10.set_index('symbol')
+top = top10.to_dict()
+top = top['quote.USD.percent_change_24h']
+column_data = {"Symbol": "Percentage Change"}
+column_data.update(top)
+
+#Bar Chart
+top10 = data.head(10)
+top10 = top10.loc[:, ['symbol', 'total_supply']]
+top10 = top10.set_index('symbol')
+top = top10.to_dict()
+top = top['total_supply']
+bar_data = {"Symbol": "Total Supply"}
+bar_data.update(top)
 
 app = Flask(__name__)
 
@@ -19,36 +44,20 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
+@app.route('/dashboard')
+def dashboard():
+    return render_template('Dashboard.html', data=pie_data, data1=column_data, data2=bar_data)
+
 @app.route('/google-charts/piechart')
 def google_piechart():
-    pie = data.groupby('infinite_supply').count()
-    pie = pie['name'].to_dict()
-    values = pie.items()
-    pie = {str(key): value for key, value in values}
-    pie_data = {"Infinite Supply": "Values"}
-    pie_data.update(pie)
     return render_template('PieChart.html', data=pie_data)
 
 @app.route('/google-charts/columnchart')
-def google_linechart():
-    top10 = data.head(10)
-    top10 = top10.loc[:, ['symbol', 'quote.USD.percent_change_24h']]
-    top10 = top10.set_index('symbol')
-    top = top10.to_dict()
-    top = top['quote.USD.percent_change_24h']
-    column_data = {"Symbol": "Percentage Change"}
-    column_data.update(top)
+def google_columnchart():
     return render_template('ColumnChart.html', data=column_data)
 
 @app.route('/google-charts/barchart')
 def google_barchart():
-    top10 = data.head(10)
-    top10 = top10.loc[:, ['symbol', 'total_supply']]
-    top10 = top10.set_index('symbol')
-    top = top10.to_dict()
-    top = top['total_supply']
-    bar_data = {"Symbol": "Total Supply"}
-    bar_data.update(top)
     return render_template('BarChart.html', data=bar_data)
 
 if __name__ == "__main__":
