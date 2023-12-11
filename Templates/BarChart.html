@@ -11,23 +11,19 @@
         google.charts.setOnLoadCallback(drawChart);
         function drawChart() {
             var data = google.visualization.arrayToDataTable([
-                ["Element", "Density", { role: "style" } ],
-                ["Copper", 8.94, "#b87333"],
-                ["Silver", 10.49, "silver"],
-                ["Gold", 19.30, "gold"],
-                ["Platinum", 21.45, "color: #e5e4e2"]
+              {% for key, value in data.items() %}
+                {% if value is string %}
+                  ['{{ key }}', '{{ value }}'],
+                {% else %}
+                  ['{{ key }}', {{ value }}],
+                {% endif %}
+              {% endfor %}
             ]);
 
             var view = new google.visualization.DataView(data);
-            view.setColumns([0, 1,
-                        { calc: "stringify",
-                            sourceColumn: 1,
-                            type: "string",
-                            role: "annotation" },
-                        2]);
 
             var options = {
-                title: "Density of Precious Metals, in g/cm^3",
+                title: "Total Supply of Top 10 Crypto",
                 width: 1300,
                 height: 800,
                 bar: {groupWidth: "95%"},
@@ -48,13 +44,10 @@
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
               <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="/">Home</a>
-              </li>
-              <li class="nav-item">
                 <a class="nav-link active" aria-current="page" href="/google-charts/piechart">PieChart</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="/google-charts/linechart">LineChart</a>
+                <a class="nav-link active" aria-current="page" href="/google-charts/columnchart">ColumnChart</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link active" aria-current="page" href="/google-charts/barchart">BarChart</a>
