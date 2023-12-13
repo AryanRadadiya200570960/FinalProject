@@ -1,40 +1,13 @@
-from requests import Request, Session
-from requests.exceptions import ConnectionError, Timeout
 from flask import Flask, render_template, Response
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 from pymongo import MongoClient
 import pandas as pd
-import time
 
 client = MongoClient("mongodb+srv://aryanrada0:aryan@final-project.yvhczbt.mongodb.net/?retryWrites=true&w=majority")
 db = client.get_database('crypto')
 records = db.crypto
-
-#Fetching data from API and storing it in cloud server
-#it will fetch data every 24 hours
-while True:
-    url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
-    parameters = {
-      'start':'1',
-      'limit':'100',
-      'convert':'USD'
-    }
-    headers = {
-      'Accepts': 'application/json',
-      'X-CMC_PRO_API_KEY': '60074b30-5b62-4b4a-8d2e-2e9638817673',
-    }
-
-    session = Session()
-    session.headers.update(headers)
-    response = session.get(url, params=parameters)
-    if response.status_code == 200:
-        data = response.json()
-        records.insert_one(data)
-        time.sleep(86400)
-else:
-    exit()
 
 data = records.find({}, {'data'})
 data = pd.json_normalize(data[0]['data'], meta=['id', 'name', 'symbol', 'slug', 'total_supply', ['quote', 'USD', 'price']])
